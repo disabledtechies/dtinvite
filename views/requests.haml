@@ -1,0 +1,13 @@
+%h2 #{@page_type} Join Requests
+%table.table
+  %thead
+    %tr
+      %th{scope: 'col'} Name
+      %th{scope: 'col'} Request Age
+  - @requests.each do |request|
+    %tr
+      %td
+        %a{href: "/requests/#{request[:id]}"}= request[:name]
+      %td= "#{((Time.now-request[:submitted_at])/60/60/24).round} days"
+
+

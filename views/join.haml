@@ -1,0 +1,38 @@
+%h2 Request to Join
+%form#joinform{method: 'post', onsubmit: 'return validateRequest();'}
+  %div#name-alert{tabindex: -1}
+  %div.mb-3
+    %label.form-label{for: 'name'} Name:
+    %input.form-control#name{name: 'name'}
+  %div#email-alert{tabindex: -1}
+  %div.mb-3
+    %label.form-label{for: 'email'} Email:
+    %input.form-control#email{name: 'email'}
+  %div.mb-3
+    %label.form-label{for: 'referer'} Referred By (optional):
+    %input.form-control#referer{name: 'referer'}
+  %div#checkbox-alert{tabindex: -1}
+  - @reasons.each do |reason|
+    %div.form-check
+      %input.form-check-input{type: :checkbox, name: "reason-#{reason[:id]}", id: "reason-#{reason[:id]}", onclick: "toggleExtraInfo('reason-#{reason[:id]}-extra');"}
+      %label.form-check-label{for: "reason-#{reason[:id]}"}= reason[:fulldesc]
+      - if reason[:extradesc]
+        %div.mt-1.mb-3
+          %label.form-label{for: "reason-#{reason[:id]}-extra"}= reason[:extradesc]
+          %input.form-control{name: "reason-#{reason[:id]}-extra", id: "reason-#{reason[:id]}-extra", disabled: true}
+  %div.mb-3
+    %label.form-label{for: 'notes'} Anything else you'd like us to know:
+    %textarea.form-control#notes{name: 'notes'}
+  %input.btn.btn-primary.mb-3{type: 'submit', value: 'Submit Request'}
+%div.form-text#footnote
+  %p * Please note, we encourage you to define "disability" in whatever way makes sense to you. We define "disability" broadly. Some examples of a "disability" might be: 
+  %ul
+    %li long-term injuries from from war, punishment, violence, toxic exposure, work, etc.
+    %li a self-diagnosed disabling condition
+    %li a medically-diagnosed disabling condition
+    %li mental illness
+    %li chronic illness
+    %li chronic pain
+    %li neurodiversity/cognitive impairment/learning disability
+    %li sensory loss/sensory impairment
+  %p These are only examples and the list is not comprehensive.

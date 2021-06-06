@@ -54,3 +54,6 @@ build-iPhoneSimulator/
 
 # Used by RuboCop. Remote config files pulled in from inherit_from directive.
 # .rubocop-https?--*
+
+# We don't want to re-distribute bootstrap
+public/assets/css/bootstrap.min.css

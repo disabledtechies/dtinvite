@@ -1,0 +1,195 @@
+#!/usr/bin/ruby
+
+require 'pp'
+require 'haml'
+require 'yaml'
+require 'sinatra'
+require 'sequel'
+require 'bcrypt'
+require 'net/http'
+
+DB = Sequel.connect("sqlite://#{Dir.pwd}/dtinvite.sqlite3")
+CFG = YAML.load(File.read("dtinvite.yaml"))
+
+class User < Sequel::Model
+end
+
+class Reason < Sequel::Model
+end
+
+class Requests_reasons < Sequel::Model
+  many_to_one :reason
+end
+
+class Request < Sequel::Model
+  many_to_many :reasons,
+    left_id: :request_id,
+    right_id: :reasons_id,
+    join_table: :requests_reasons
+
+  one_to_many :requests_reasons,
+    key: :request_id,
+    class: Requests_reasons
+end
+
+enable :sessions
+set :port, 4580
+
+def require_logged_in
+  redirect '/login' unless session[:user]
+end
+
+def slack_notify(slack_uri:, msg: )
+  return unless slack_uri
+
+  slack_req = {text: msg}
+  uri = URI(slack_uri)
+  Net::HTTP.post(uri, slack_req.to_json)
+end
+
+not_found do
+  'Path not found.' 
+end
+
+get '/'  do
+  redirect '/join' unless session[:user]
+  redirect '/admin'
+end
+
+get '/join' do
+  @reasons = DB[:reasons]
+  haml :join
+end
+
+post '/join' do
+  data = {
+    :name => params[:name],
+    :email => params[:email],
+    :referer => params[:referer],
+    :notes => params[:notes],
+  }
+  reasons = {}
+  params.each do |name, value|
+    next unless name.start_with? 'reason-'
+    name_parts = name.split("-")
+    id = name_parts[1]
+    if(name_parts.length == 2) then
+      # this is a checkbox
+      reasons[id] = {reason_id: id}
+    else
+      # this is an "extra info" piece, not a checkbox
+      reasons[id][:extrainfo] = value
+    end
+  end
+  data[:submitted_at] = Time.now
+  newreq_id = DB[:requests].insert(data)
+  newreq = Request[newreq_id]
+  reasons.each do |key, val|
+    newreq.add_reason(Reason[val[:reason_id]])
+    if(val[:extrainfo]) then
+      # add the extra info to the join table
+      newreq.requests_reasons_dataset.where(reason_id: val[:reason_id]).first.update(extrainfo: val[:extrainfo])
+    end
+  end
+  
+  slack_notify slack_uri: CFG['slack_notify_uri'], msg: "New invite request received for <#{CFG['base_uri']}/requests/#{newreq_id}|#{params[:name]}>!"
+
+  redirect "/join/done"
+end
+
+get '/join/done' do
+  haml :join_done
+end
+
+get '/requests' do
+  require_logged_in
+
+  @requests = DB[:requests].where(processed: nil)
+  @page_type = 'Pending'
+  haml :requests
+end
+
+get '/requests/all' do
+  require_logged_in
+
+  @requests = DB[:requests]
+  @page_type = 'All'
+  haml :requests
+end
+
+get '/requests/:id' do
+  require_logged_in
+
+  @req = Request[params[:id]]
+  @reasons = []
+  # get the extra information out of the join table
+  @req.requests_reasons_dataset.each do |req_reasons|
+    @reasons << {shortdesc: req_reasons.reason.shortdesc, extrainfo: req_reasons.extrainfo}
+  end
+  haml :request
+end
+
+post '/requests/:id' do
+  require_logged_in
+
+  @req = Request[params[:id]]
+  @req.update(processed: true)
+  @req.update(processed_at: Time.now)
+  @req.update(processed_by: session[:user])
+  @req.update(processed_result: params[:action])
+  @req.update(processed_notes: params[:notes])
+  
+  slack_notify slack_uri: CFG['slack_notify_uri'], msg: "Invite request for #{@req[:name]} has been processed by #{session[:user]}."
+
+  redirect "/requests"
+end
+
+get '/login' do
+  haml :login
+end
+
+post '/login' do
+  user = DB[:users].where(username: params[:username]).first
+  if user and BCrypt::Password.new(user[:pwhash]) == params[:password] then
+    session[:user] = params[:username]
+    redirect '/admin'
+  else
+    redirect '/login'
+  end
+end
+
+get '/logout' do
+  session.delete :user
+  haml :logout
+end
+
+get '/password' do
+  require_logged_in
+
+  haml :password
+end
+
+post '/password' do
+  user = User.where(username: session[:user]).first
+  if(params[:new] != params[:newagain]) then
+    @message = "New passwords don't match."
+    haml :password
+  elsif(params[:new].length < 8)
+    @message = "New password must be at least 8 characters."
+    haml :password
+  elsif(BCrypt::Password.new(user[:pwhash]) != params[:existing]) then
+    @message = "Existing password is incorrect."
+    haml :password
+  else
+    user.update pwhash: BCrypt::Password.create(params[:new])
+    @message = "Password successfully changed."
+    haml :password
+  end
+end
+
+get '/admin' do
+  require_logged_in
+
+  haml :admin
+end
+

@@ -1,0 +1,29 @@
+%h2 Join Request #{@req[:id]}
+%div
+  %div= "Name: #{@req[:name]}"
+  %div= "Email: #{@req[:email]}"
+  %div= "Referer: #{@req[:referer] ? @req[:referer] : 'none'}"
+  %div= "Other Info: #{@req[:notes]}"
+  %div= "Join Reasons: #{@reasons.map { |reason| reason[:extrainfo] ? "#{reason[:shortdesc]} (#{reason[:extrainfo]})" : reason[:shortdesc]}.join(", ")}"
+%div.bg-secondary.text-white.p-3.mt-3.w-50
+  - if (@req[:processed]) then
+    %h3 Request Processing Details
+    %div= "Processed By: #{@req[:processed_by]}"
+    %div= "Processed At: #{@req[:processed_at]}"
+    %div= "Action Taken: #{@req[:processed_result]}ed"
+    %div= "Processing Notes: #{@req[:processed_notes]}"
+  - else
+    %h3 Action Request
+    %form{method: 'post'}
+      %input{type: 'hidden', name: 'id', value: @req[:id]}
+      %div.form-check'
+        %label.form-check-label{for: 'accept'} Accept
+        %input.form-check-input#accept{type: 'radio', name: 'action', value: 'accept'}
+      %div.form-check
+        %label.form-check-label{for: 'reject'} Reject
+        %input.form-check-input#reject{type: 'radio', name: 'action', value: 'reject'}
+      %div.mb-3
+        %label.form-label{for: 'notes'} Notes:
+        %input.form-control#notes{name: 'notes'}
+      %button.btn.btn-primary.mb-3{type: 'submit'} Action Request
+
