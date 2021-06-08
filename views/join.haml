@@ -1,4 +1,17 @@
 %h2 Request to Join
+%div
+  %p The Disabled Techies Slack is for techies who identify personally with disability. This is not a space for allies or to find participants for your well-intentioned research study.
+  %p All that we ask is that you are both a techie and have a disability. We invite and encourage you to define techie and disability in your own ways. Some examples of a disability might include (but are not limited to):
+  %ul
+    %li long-term injuries from from war, punishment, violence, toxic exposure, work, etc.
+    %li a self-diagnosed disabling condition
+    %li a medically-diagnosed disabling condition
+    %li mental illness
+    %li chronic illness
+    %li chronic pain
+    %li neurodiversity/cognitive impairment/learning disability
+    %li sensory loss/sensory impairment
+  %p These are only examples and the list is not comprehensive.
 %form#joinform{method: 'post', onsubmit: 'return validateRequest();'}
   %div#name-alert{tabindex: -1}
   %div.mb-3
@@ -24,15 +37,3 @@
     %label.form-label{for: 'notes'} Anything else you'd like us to know:
     %textarea.form-control#notes{name: 'notes'}
   %input.btn.btn-primary.mb-3{type: 'submit', value: 'Submit Request'}
-%div.form-text#footnote
-  %p * Please note, we encourage you to define "disability" in whatever way makes sense to you. We define "disability" broadly. Some examples of a "disability" might be: 
-  %ul
-    %li long-term injuries from from war, punishment, violence, toxic exposure, work, etc.
-    %li a self-diagnosed disabling condition
-    %li a medically-diagnosed disabling condition
-    %li mental illness
-    %li chronic illness
-    %li chronic pain
-    %li neurodiversity/cognitive impairment/learning disability
-    %li sensory loss/sensory impairment
-  %p These are only examples and the list is not comprehensive.
