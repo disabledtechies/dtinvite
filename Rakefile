@@ -9,5 +9,8 @@ namespace :db do
   task :fill do
     system("sqlite3 dtinvite.sqlite3 -init dbinit.sql .quit")
   end
+  task :cleanup do
+    system("sqlite3 dtinvite.sqlite3 -init clean-old-requests.sql .quit")
+  end
 end
 
