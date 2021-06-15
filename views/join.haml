@@ -27,12 +27,13 @@
   %div#checkbox-alert{tabindex: -1}
   - @reasons.each do |reason|
     %div.form-check
-      %input.form-check-input{type: :checkbox, name: "reason-#{reason[:id]}", id: "reason-#{reason[:id]}", onclick: "toggleExtraInfo('reason-#{reason[:id]}-extra');"}
+      %input.form-check-input{type: :checkbox, name: "reason-#{reason[:id]}", id: "reason-#{reason[:id]}", onclick: "toggleExtraInfo('#{reason[:id]}');"}
       %label.form-check-label{for: "reason-#{reason[:id]}"}= reason[:fulldesc]
       - if reason[:extradesc]
-        %div.mt-1.mb-3
+        %div.mt-1.mb-3{id: "reason-#{reason[:id]}-extra-section", style: 'display: none'}
+          %div{tabindex: -1, id: "reason-#{reason[:id]}-extra-alert"}
           %label.form-label{for: "reason-#{reason[:id]}-extra"}= reason[:extradesc]
-          %input.form-control{name: "reason-#{reason[:id]}-extra", id: "reason-#{reason[:id]}-extra", disabled: true}
+          %input.form-control{name: "reason-#{reason[:id]}-extra", id: "reason-#{reason[:id]}-extra"}
   %div.mb-3
     %label.form-label{for: 'notes'} Anything else you'd like us to know:
     %textarea.form-control#notes{name: 'notes'}

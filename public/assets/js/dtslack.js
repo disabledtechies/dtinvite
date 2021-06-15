@@ -1,7 +1,15 @@
 function toggleExtraInfo(id) {
-  var x = document.getElementById(id);
-  if(x) {
-    x.disabled = !x.disabled;
+  var div = document.getElementById("reason-" + id + "-extra-section");
+  var txt = document.getElementById("reason-" + id + "-extra");
+  if(!div) {
+    return
+  }
+  if(div.style.display == 'none') {
+    div.style.display = 'block';
+    txt.disabled = false;
+  } else {
+    div.style.display = 'none';
+    txt.disabled = true;
   }
 }
 
@@ -11,6 +19,20 @@ function validateRequest() {
   
   rv = true;
 
+  // Make sure if there's any 'extra info' required from a checked box,
+  // that it's filled in
+  var elements = document.querySelectorAll("[id$='extra']")
+  for (var i = 0, element; element = elements[i++];) {
+    if(element.disabled == false && element.value == '') {
+      alertbox = document.getElementById(element.id + "-alert");
+      alertbox.innerHTML = "<div class='alert alert-danger'>You must enter information into the below text field if the above checkbox is checked.</div>";
+      alertbox.focus();
+      rv = false;
+    } else {
+      alertbox.innerHTML = "";
+    }
+  }
+  
   // Make sure some checkboxes are selected
   var elements = document.querySelectorAll("#joinform input[type=checkbox]")
 
