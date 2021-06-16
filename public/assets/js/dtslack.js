@@ -7,6 +7,7 @@ function toggleExtraInfo(id) {
   if(div.style.display == 'none') {
     div.style.display = 'block';
     txt.disabled = false;
+    div.className = 'ps-3 pt-2 border-secondary border-5 border-start';
   } else {
     div.style.display = 'none';
     txt.disabled = true;
